@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculator</title>
+    <style>
+        body { font-family: Arial, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #f4f4f4; }
+        #calculator { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        #display { width: 100%; height: 40px; text-align: right; margin-bottom: 10px; font-size: 24px; }
+        button { width: 60px; height: 60px; font-size: 20px; margin: 5px; }
+    </style>
+</head>
+<body>
+    <div id="calculator">
+        <input type="text" id="display" disabled />
+        <div>
+            <button onclick="appendNumber(7)">7</button>
+            <button onclick="appendNumber(8)">8</button>
+            <button onclick="appendNumber(9)">9</button>
+            <button onclick="setOperation('/')">/</button>
+        </div>
+        <div>
+            <button onclick="appendNumber(4)">4</button>
+            <button onclick="appendNumber(5)">5</button>
+            <button onclick="appendNumber(6)">6</button>
+            <button onclick="setOperation('*')">*</button>
+        </div>
+        <div>
+            <button onclick="appendNumber(1)">1</button>
+            <button onclick="appendNumber(2)">2</button>
+            <button onclick="appendNumber(3)">3</button>
+            <button onclick="setOperation('-')">-</button>
+        </div>
+        <div>
+            <button onclick="clearDisplay()">C</button>
+            <button onclick="appendNumber(0)">0</button>
+            <button onclick="calculate()">=</button>
+            <button onclick="setOperation('+')">+</button>
+        </div>
+    </div>
+    <script>
+        let currentInput = '';
+        let operation = '';
+
+        function appendNumber(number) {
+            currentInput += number;
+            updateDisplay();
+        }
+
+        function setOperation(op) {
+            if (currentInput === '') return;
+            operation = op;
+            currentInput += ' ' + op + ' ';
+            updateDisplay();
+        }
+
+        function clearDisplay() {
+            currentInput = '';
+            operation = '';
+            updateDisplay();
+        }
+
+        function updateDisplay() {
+            document.getElementById('display').value = currentInput;
+        }
+
+        async function calculate() {
+            const parts = currentInput.split(' ');
+            if (parts.length !== 3) return;
+            const num1 = parseFloat(parts[0]);
+            const num2 = parseFloat(parts[2]);
+            const op = parts[1];
+
+            if (op === '/' && num2 === 0) {
+                alert('Cannot divide by zero!');
+                return;
+            }
+
+            const response = await fetch('/calculate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ operation: op, num1: num1, num2: num2 })
+            });
+            const result = await response.json();
+            currentInput = result.result;
+            updateDisplay();
+        }
+    </script>
+</body>
+</html>
